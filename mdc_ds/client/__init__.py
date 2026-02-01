@@ -1,5 +1,5 @@
-from cv_ds.types.dataset_details import DatasetDetails
-from cv_ds.types.orgnazation import Organization
+from mdc_ds.types.dataset_details import DatasetDetails
+from mdc_ds.types.orgnazation import Organization
 
 from ._client import (
     MozillaDataCollectiveAsyncClient,

@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Dict, Optional
 
 if TYPE_CHECKING:
-    from cv_ds.types.dataset_details import DatasetDetails
+    from mdc_ds.types.dataset_details import DatasetDetails
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ def get_datasets_details() -> Dict[str, "DatasetDetails"]:
 
     from pydantic import TypeAdapter
 
-    from cv_ds.types.dataset_details import DatasetDetails
+    from mdc_ds.types.dataset_details import DatasetDetails
 
     try:
         data: list = json.loads(

@@ -9,18 +9,18 @@ dependencies = [
 ]
 description = "Mozilla Data Collective API client with some utilities."
 license = { text = "MIT" }
-name = "cv-ds"
+name = "mdc-ds"
 readme = "README.md"
 requires-python = ">=3.11,<4"
 version = "0.1.0"
 
 [project.urls]
-Homepage = "https://github.com/allen2c/cv-ds"
-"PyPI" = "https://pypi.org/project/cv-ds/"
-Repository = "https://github.com/allen2c/cv-ds"
+Homepage = "https://github.com/allen2c/mdc-ds"
+"PyPI" = "https://pypi.org/project/mdc-ds/"
+Repository = "https://github.com/allen2c/mdc-ds"
 
 [tool.poetry]
-packages = [{ include = "cv_ds" }]
+packages = [{ include = "mdc_ds" }]
 
 [tool.poetry.extras]
 all = []

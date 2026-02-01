@@ -6,9 +6,9 @@ from typing import Any, Generator
 
 import httpx
 
-from cv_ds import DEFAULT_MDC_CACHE, MDC_API_KEY_NAME, MDC_CACHE_NAME
-from cv_ds.types.dataset_details import DatasetDetails
-from cv_ds.types.download_session import DownloadSession
+from mdc_ds import DEFAULT_MDC_CACHE, MDC_API_KEY_NAME, MDC_CACHE_NAME
+from mdc_ds.types.dataset_details import DatasetDetails
+from mdc_ds.types.download_session import DownloadSession
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class MozillaDataCollectiveClient(httpx.Client):
     def get_dataset_details(self, dataset_id: str) -> DatasetDetails:
         """Retrieves the details of a specific dataset."""
 
-        from cv_ds.registry import get_dataset_details
+        from mdc_ds.registry import get_dataset_details
 
         if cached_ds := get_dataset_details(dataset_id):
             logger.debug(f"Dataset input {dataset_id} found in cache")
@@ -66,7 +66,7 @@ class MozillaDataCollectiveClient(httpx.Client):
     def get_dataset_download_session(self, dataset_id: str) -> DownloadSession:
         """Creates a download session and returns the dataset's download URL for direct download from storage. The user must have previously agreed to the dataset's terms of use through the web interface."""  # noqa: E501
 
-        from cv_ds.registry import get_dataset_details
+        from mdc_ds.registry import get_dataset_details
 
         if not (ds := get_dataset_details(dataset_id)):
             ds = self.get_dataset_details(dataset_id)
@@ -80,7 +80,7 @@ class MozillaDataCollectiveClient(httpx.Client):
     ) -> Path:
         import shutil
 
-        from cv_ds.utils.ensure_output import ensure_output
+        from mdc_ds.utils.ensure_output import ensure_output
 
         ds_details = self.get_dataset_details(dataset_id)
         cache_filepath = self.cache_dir.joinpath(f"{ds_details.id}.tar.gz")
@@ -107,7 +107,7 @@ class MozillaDataCollectiveClient(httpx.Client):
 
         from tqdm import tqdm
 
-        from cv_ds.utils.ensure_output import ensure_output
+        from mdc_ds.utils.ensure_output import ensure_output
 
         # Extract URL and determine output path (existing logic)
         url = (
@@ -173,7 +173,7 @@ class MozillaDataCollectiveAsyncClient(httpx.AsyncClient):
     async def get_dataset_details(self, dataset_id: str) -> DatasetDetails:
         """Retrieves the details of a specific dataset."""
 
-        from cv_ds.registry import get_dataset_details
+        from mdc_ds.registry import get_dataset_details
 
         if cached_ds := get_dataset_details(dataset_id):
             logger.debug(f"Dataset input {dataset_id} found in cache")
@@ -186,7 +186,7 @@ class MozillaDataCollectiveAsyncClient(httpx.AsyncClient):
     async def get_dataset_download_session(self, dataset_id: str) -> DownloadSession:
         """Creates a download session and returns the dataset's download URL for direct download from storage. The user must have previously agreed to the dataset's terms of use through the web interface."""  # noqa: E501
 
-        from cv_ds.registry import get_dataset_details
+        from mdc_ds.registry import get_dataset_details
 
         if not (ds := get_dataset_details(dataset_id)):
             ds = await self.get_dataset_details(dataset_id)
@@ -200,7 +200,7 @@ class MozillaDataCollectiveAsyncClient(httpx.AsyncClient):
     ) -> Path:
         import shutil
 
-        from cv_ds.utils.ensure_output import ensure_output
+        from mdc_ds.utils.ensure_output import ensure_output
 
         ds_details = await self.get_dataset_details(dataset_id)
         cache_filepath = self.cache_dir.joinpath(f"{ds_details.id}.tar.gz")
@@ -227,7 +227,7 @@ class MozillaDataCollectiveAsyncClient(httpx.AsyncClient):
         import aiofiles
         from tqdm.asyncio import tqdm as async_tqdm
 
-        from cv_ds.utils.ensure_output import ensure_output
+        from mdc_ds.utils.ensure_output import ensure_output
 
         # Extract URL and determine output path
         url = (
