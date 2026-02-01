@@ -1,14 +1,18 @@
-# ac-py-template
+# MDC-DS
 
-[![PyPI version](https://img.shields.io/pypi/v/ac-py-template.svg)](https://pypi.org/project/ac-py-template/)
-[![Python Version](https://img.shields.io/pypi/pyversions/ac-py-template.svg)](https://pypi.org/project/ac-py-template/)
-[![License](https://img.shields.io/pypi/l/ac-py-template.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/mdc-ds.svg)](https://pypi.org/project/mdc-ds/)
+[![Python Version](https://img.shields.io/pypi/pyversions/mdc-ds.svg)](https://pypi.org/project/mdc-ds/)
+[![License](https://img.shields.io/pypi/l/mdc-ds.svg)](https://opensource.org/licenses/MIT)
 
-AllenChou's Python template.
+Mozilla Data Collective Dataset API client with some utilities.
 
 ## Features
 
 ## Installation
+
+```bash
+pip install mdc-ds
+```
 
 ## Quick Start
 
