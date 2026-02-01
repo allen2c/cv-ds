@@ -123,7 +123,7 @@ class MozillaDataCollectiveClient(httpx.Client):
         )
 
         # Stream download with progress tracking
-        with self.stream("GET", url) as response:
+        with self.stream("GET", url, auth=None) as response:
             response.raise_for_status()
 
             # Use response content-length if sizeBytes not available
