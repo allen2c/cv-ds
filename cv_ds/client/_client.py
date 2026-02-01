@@ -1,48 +1,20 @@
 import json
+import logging
 import os
-from datetime import datetime
 from typing import Any, Generator
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
 
 from cv_ds import MDC_API_KEY_NAME
+from cv_ds.types.dataset_details import DatasetDetails
+
+logger = logging.getLogger(__name__)
 
 error_api_key_missing_msg = (
     "The API key for Mozilla Data Collective is not set. "
     + "Please provide it as an argument or "
     + f"set the `{MDC_API_KEY_NAME}` environment variable."
 )
-
-
-class Organization(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    name: str = Field(..., description="The name of the organization")
-    slug: str = Field(..., description="The slug of the organization")
-
-
-class DatasetDetails(BaseModel):
-    model_config = ConfigDict(extra="allow")
-    id: str = Field(..., description="The ID of the dataset")
-    slug: str = Field(..., description="The slug of the dataset")
-    name: str = Field(..., description="The name of the dataset")
-    shortDescription: str = Field(
-        ..., description="The short description of the dataset"
-    )
-    longDescription: str = Field(..., description="The long description of the dataset")
-    locale: str = Field(..., description="The locale of the dataset")
-    sizeBytes: int = Field(..., description="The size of the dataset in bytes")
-    createdAt: datetime = Field(..., description="The creation date of the dataset")
-    organization: Organization = Field(
-        ..., description="The organization of the dataset"
-    )
-    license: str = Field(..., description="The license of the dataset")
-    licenseAbbreviation: str = Field(
-        ..., description="The abbreviation of the license of the dataset"
-    )
-    task: str = Field(..., description="The task of the dataset")
-    format: str = Field(..., description="The format of the dataset")
-    datasetUrl: str = Field(..., description="The URL of the dataset")
 
 
 class BearerAuth(httpx.Auth):
@@ -72,15 +44,14 @@ class MozillaDataCollectiveClient(httpx.Client):
         super().__init__(base_url=base_url, auth=auth, headers=headers, **kwargs)
 
     def get_dataset_details(self, dataset_id: str) -> DatasetDetails:
+        from cv_ds.registry import get_dataset_details
+
+        if cached_ds := get_dataset_details(dataset_id):
+            logger.debug(f"Dataset input {dataset_id} found in cache")
+            return cached_ds
+
         response = self.get(f"/datasets/{dataset_id}")
         response.raise_for_status()
-        print()
-        print()
-        print()
-        print(response.json())
-        print()
-        print()
-        print()
         return DatasetDetails.model_validate(response.json())
 
 
@@ -101,6 +72,12 @@ class MozillaDataCollectiveAsyncClient(httpx.AsyncClient):
         super().__init__(base_url=base_url, auth=auth, headers=headers, **kwargs)
 
     async def get_dataset_details(self, dataset_id: str) -> DatasetDetails:
+        from cv_ds.registry import get_dataset_details
+
+        if cached_ds := get_dataset_details(dataset_id):
+            logger.debug(f"Dataset input {dataset_id} found in cache")
+            return cached_ds
+
         response = await self.get(f"/datasets/{dataset_id}")
         response.raise_for_status()
         return DatasetDetails.model_validate(response.json())
