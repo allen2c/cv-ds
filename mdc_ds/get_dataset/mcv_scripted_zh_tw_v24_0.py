@@ -65,7 +65,7 @@ def get_dataset(
     ).joinpath(slug_name)
     cache_path.mkdir(parents=True, exist_ok=True)
 
-    if cache_path.is_file():
+    if cache_path.exists() and cache_path.is_dir():
         return DatasetDict.load_from_disk(str(cache_path))[split]
 
     client = MozillaDataCollectiveClient()
