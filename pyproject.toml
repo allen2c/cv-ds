@@ -2,6 +2,7 @@
 authors = [{ name = "Allen Chou", email = "f1470891079@gmail.com" }]
 dependencies = [
   "aiofiles",
+  "google-language-support (>=0.3.0)",
   "httpx",
   "pydantic (>=2)",
   "pydantic-settings",
