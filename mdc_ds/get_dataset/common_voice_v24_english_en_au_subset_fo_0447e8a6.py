@@ -1,16 +1,15 @@
-import io
 import logging
 import os
 import tarfile
 from pathlib import Path
-from typing import List, Literal, Optional, TypedDict
+from typing import List, Literal, TypedDict
 
 import pandas as pd
 from datasets import Dataset, DatasetDict
 from google_language_support import LanguageCodes
-from pydub import AudioSegment
 
 from mdc_ds.types.feature import feature
+from mdc_ds.utils.audio_processor import AudioProcessor
 from mdc_ds.utils.split_dataset_balanced_by_speaker import (
     split_dataset_balanced_by_speaker,
 )
@@ -18,45 +17,6 @@ from mdc_ds.utils.split_dataset_balanced_by_speaker import (
 logger = logging.getLogger(__name__)
 
 slug_name = "common-voice-v24-english-en-au-subset-fo-0447e8a6"
-
-
-class AudioProcessor:
-    """
-    Helper class to handle tarfile opening within worker processes.
-    Ensures that the tar file is opened once per process to avoid overhead.
-    """
-
-    def __init__(self, tar_path: str):
-        self.tar_path = tar_path
-        # The tar handle will be initialized lazily in the worker process
-        self._tar: Optional[tarfile.TarFile] = None
-
-    def __call__(self, example):
-        if self._tar is None:
-            self._tar = tarfile.open(self.tar_path, "r:gz")
-
-        audio_path = example["audio_path"]
-
-        # Extract file from tar
-        audio_tar_obj = self._tar.extractfile(audio_path)
-        if not audio_tar_obj:
-            raise ValueError(f"Audio tar object not found: {audio_path}")
-
-        # Audio processing logic (same as original)
-        audio_seg: AudioSegment = AudioSegment.from_file(
-            io.BytesIO(audio_tar_obj.read())
-        )
-        audio_seg = audio_seg.set_channels(1).set_frame_rate(16000)
-        mp3_io = io.BytesIO()
-        audio_seg.export(mp3_io, format="mp3", bitrate="128k")
-        audio_bytes = mp3_io.getvalue()
-
-        # Return the processed audio bytes
-        return {"audio": audio_bytes}
-
-    def __del__(self):
-        if self._tar:
-            self._tar.close()
 
 
 class TrainManifest(TypedDict):
