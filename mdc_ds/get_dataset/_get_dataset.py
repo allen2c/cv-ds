@@ -9,7 +9,7 @@ def get_dataset(
         "mcv-scripted-zh-TW-v24.0",
         "mcv-scripted-zh-CN-v24.0",
         "mcv-scripted-zh-HK-v24.0",
-        "mcv-scripted-en-v24.0",
+        "common-voice-v24-english-en-au-subset-fo-0447e8a6",
     ],
     split: Literal["train", "test", "validation"] = "train",
 ) -> "Dataset":

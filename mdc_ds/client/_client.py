@@ -71,6 +71,8 @@ class MozillaDataCollectiveClient(httpx.Client):
         if not (ds := get_dataset_details(dataset_id)):
             ds = self.get_dataset_details(dataset_id)
 
+        logger.debug(f"Getting download session for dataset '{ds.slug}'")
+
         response = self.post(f"/datasets/{ds.id}/download")
         response.raise_for_status()
         return DownloadSession.model_validate(response.json())
@@ -103,6 +105,8 @@ class MozillaDataCollectiveClient(httpx.Client):
         # Extract URL and determine output path (existing logic)
         url = download_session.downloadUrl
         output = Path(output)
+
+        logger.debug(f"Downloading session '{url}' to '{output}'")
 
         # Get total size for progress tracking
         total_size = download_session.sizeBytes
