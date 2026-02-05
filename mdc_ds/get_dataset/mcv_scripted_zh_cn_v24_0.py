@@ -54,7 +54,7 @@ def get_metadata(
                 {
                     "audio_path": full_audio_path,
                     "text": train_row.sentence,  # type: ignore
-                    "language": LanguageCodes.CHINESE_TRADITIONAL,
+                    "language": LanguageCodes.CHINESE_SIMPLIFIED,
                 }
             )
 
@@ -66,7 +66,7 @@ def get_metadata(
                 {
                     "audio_path": full_audio_path,
                     "text": dev_row.sentence,  # type: ignore
-                    "language": LanguageCodes.CHINESE_TRADITIONAL,
+                    "language": LanguageCodes.CHINESE_SIMPLIFIED,
                 }
             )
 
@@ -78,7 +78,7 @@ def get_metadata(
                 {
                     "audio_path": full_audio_path,
                     "text": test_row.sentence,  # type: ignore
-                    "language": LanguageCodes.CHINESE_TRADITIONAL,
+                    "language": LanguageCodes.CHINESE_SIMPLIFIED,
                 }
             )
 
