@@ -32,12 +32,14 @@ class AudioProcessor:
             io.BytesIO(audio_tar_obj.read())
         )
         audio_seg = audio_seg.set_channels(1).set_frame_rate(16000)
+        duration = audio_seg.duration_seconds
+
         mp3_io = io.BytesIO()
         audio_seg.export(mp3_io, format="mp3", bitrate="128k")
         audio_bytes = mp3_io.getvalue()
 
         # Return the processed audio bytes
-        return {"audio": audio_bytes}
+        return {"audio": audio_bytes, "duration": duration}
 
     def __del__(self):
         if self._tar:
