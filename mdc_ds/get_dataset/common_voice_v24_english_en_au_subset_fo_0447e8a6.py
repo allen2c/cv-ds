@@ -1,16 +1,18 @@
 import logging
 import os
 import tarfile
+import tempfile
 from pathlib import Path
 from typing import List, Literal
 
 import pandas as pd
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, concatenate_datasets
 from google_language_support import LanguageCodes
 
 from mdc_ds.types.feature import feature
 from mdc_ds.types.manifest_item import ManifestItemWithClientId
 from mdc_ds.utils.audio_processor import AudioProcessor
+from mdc_ds.utils.shard_ds import shard_ds
 from mdc_ds.utils.split_dataset_balanced_by_speaker import (
     split_dataset_balanced_by_speaker,
 )
@@ -104,52 +106,61 @@ def get_dataset(
     )
 
     # 3. Apply Audio Processing in Parallel using .map()
-    # Initialize the processor with the path to the tar file
-    audio_processor = AudioProcessor(str(downloaded_filepath))
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        processed_shard_paths: List[Path] = []
+        sharded_ds_items = shard_ds(train_ds)
+        for idx, sharded_ds in enumerate(sharded_ds_items):
+            sharded_ds = sharded_ds.map(
+                AudioProcessor(str(downloaded_filepath)),
+                num_proc=16,
+                remove_columns=[
+                    "client_id",
+                    "audio_path",
+                ],  # We don't need the path anymore after extraction
+                desc=f"Decoding train audio shard {idx}/{len(sharded_ds_items)}",
+            )
+            shared_path = temp_path / f"shard_train_{idx}"
+            sharded_ds.save_to_disk(str(shared_path))
+            processed_shard_paths.append(shared_path)
 
-    logger.debug("Processing train dataset audio in parallel...")
-    train_ds = train_ds.map(
-        audio_processor,
-        num_proc=8,
-        remove_columns=[
-            "client_id",
-            "audio_path",
-        ],  # We don't need the path anymore after extraction
-        desc="Decoding train audio",
-        writer_batch_size=50,
-    )
+            del sharded_ds
 
-    logger.debug("Processing dev dataset audio in parallel...")
-    dev_ds = dev_ds.map(
-        audio_processor,
-        num_proc=8,
-        remove_columns=["client_id", "audio_path"],
-        desc="Decoding dev audio",
-        writer_batch_size=50,
-    )
+        processed_shards: List[Dataset] = [
+            Dataset.load_from_disk(str(p)) for p in processed_shard_paths
+        ]
+        train_ds = concatenate_datasets(processed_shards)
 
-    logger.debug("Processing test dataset audio in parallel...")
-    test_ds = test_ds.map(
-        audio_processor,
-        num_proc=8,
-        remove_columns=["client_id", "audio_path"],
-        desc="Decoding test audio",
-        writer_batch_size=50,
-    )
+        logger.debug("Processing dev dataset audio in parallel...")
+        dev_ds = dev_ds.map(
+            AudioProcessor(str(downloaded_filepath)),
+            num_proc=16,
+            remove_columns=["client_id", "audio_path"],
+            desc="Decoding dev audio",
+        )
 
-    # 4. Cast to target features (Optional but recommended to match original intent)
-    # This ensures the 'audio' column matches the type defined in 'feature'
-    train_ds = train_ds.cast(feature)
-    dev_ds = dev_ds.cast(feature)
-    test_ds = test_ds.cast(feature)
+        logger.debug("Processing test dataset audio in parallel...")
+        test_ds = test_ds.map(
+            AudioProcessor(str(downloaded_filepath)),
+            num_proc=16,
+            remove_columns=["client_id", "audio_path"],
+            desc="Decoding test audio",
+        )
 
-    dataset_dict = DatasetDict(
-        {
-            "train": train_ds,
-            "dev": dev_ds,
-            "test": test_ds,
-        }
-    )
+        # 4. Cast to target features (Optional but recommended to match original intent)
+        # This ensures the 'audio' column matches the type defined in 'feature'
+        train_ds = train_ds.cast(feature)
+        dev_ds = dev_ds.cast(feature)
+        test_ds = test_ds.cast(feature)
 
-    dataset_dict.save_to_disk(str(cache_path))
+        dataset_dict = DatasetDict(
+            {
+                "train": train_ds,
+                "dev": dev_ds,
+                "test": test_ds,
+            }
+        )
+
+        dataset_dict.save_to_disk(str(cache_path))
+
     return DatasetDict.load_from_disk(str(cache_path))[split]
